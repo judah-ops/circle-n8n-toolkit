@@ -1,19 +1,41 @@
 {
   "name": "n8n-nodes-circle",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "n8n community node for Circle.so",
+  "license": "MIT",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/CircleApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Circle/Circle.node.js"
+    ]
+  },
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "build": "n8n-node build",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
     "test": "node --env-file=.env.test --test --import tsx 'tests/regressions/*.ts'",
     "test:one": "node --env-file=.env.test --test --import tsx",
     "test:cleanup": "node --import tsx tests/cleanup.ts"
   },
   "devDependencies": {
+    "@n8n/node-cli": "^0.23.1",
     "@types/node": "^22",
     "tsx": "^4",
     "typescript": "^5"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
   }
 }
