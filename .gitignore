@@ -4,3 +4,5 @@ dist/
 CLAUDE.md
 .claude/
 notes/
+.env.test
+tests/fixtures.md

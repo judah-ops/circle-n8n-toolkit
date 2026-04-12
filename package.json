@@ -1,0 +1,19 @@
+{
+  "name": "n8n-nodes-circle",
+  "version": "0.0.0",
+  "private": true,
+  "description": "n8n community node for Circle.so",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --env-file=.env.test --test --import tsx 'tests/regressions/*.ts'",
+    "test:one": "node --env-file=.env.test --test --import tsx",
+    "test:cleanup": "node --import tsx tests/cleanup.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
