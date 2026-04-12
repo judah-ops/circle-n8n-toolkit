@@ -29,7 +29,7 @@ The guard is a precondition every regression runs before it touches anything. If
 1. The Circle API token is loaded (from `.env.test`, not from a shell export, not from a prod credential).
 2. A target community ID is loaded (also from `.env.test`).
 3. That community ID is NOT in a hardcoded blocklist of "known-dangerous" IDs that I have deliberately marked off-limits. The blocklist is empty today and grows the first time I scare myself.
-4. (Per call) Any resource the test is about to touch has a name that starts with `_test_`. For member emails using plus-addressing (e.g. `judah.ops+_test_baseline@gmail.com`), the harness extracts the plus-segment (`_test_baseline`) before checking — see `plus_segment` in the pseudocode below.
+4. (Per call) Any resource the test is about to touch has a name that starts with `_test_`. For member emails using plus-addressing (e.g. `user+_test_baseline@gmail.com`), the harness extracts the plus-segment (`_test_baseline`) before checking — see `plus_segment` in the pseudocode below.
 
 A fifth structural rule covers the never-auto-send case (section 2b below): the guarded client has no method that sends DMs, and the one method that could mail a real human (`createMember`) requires opting in twice.
 
@@ -155,8 +155,8 @@ function assertTestPrefix(name, kind):
 
 
 function plus_segment(email):
-    # judah.ops+_test_smoke_1712606400@gmail.com → "_test_smoke_1712606400"
-    # judah.ops@gmail.com (no plus) → "judah.ops" (which won't pass the assert,
+    # user+_test_smoke_1712606400@gmail.com → "_test_smoke_1712606400"
+    # user@gmail.com (no plus) → "user" (which won't pass the assert,
     # which is the correct outcome — a non-plus-addressed email is not a
     # _test_ member)
     local = email.split("@")[0]
@@ -187,9 +187,9 @@ Naming rules for every resource type the v1 ops touch:
 |---|---|---|---|
 | **Space** | `_test_<purpose>` (e.g. `_test_general`) | Persistent — created once manually in the live community | Manual, listed in `tests/fixtures.md` |
 | **Tag** | `_test_<purpose>` (e.g. `_test_smoke_tag`) | Persistent — Circle tags are cheap and reusable | Manual, listed in `tests/fixtures.md` |
-| **Baseline member** | `judah.ops+_test_baseline@gmail.com` (plus-addressing on my gmail) | Persistent — one shared member to attach tags to | Manual, listed in `tests/fixtures.md` |
+| **Baseline member** | `user+_test_baseline@gmail.com` (plus-addressing on my gmail) | Persistent — one shared member to attach tags to | Manual, listed in `tests/fixtures.md` |
 | **Post** | `_test_<test_name>_<unix>` (e.g. `_test_create_post_smoke_1712606400`) | Fresh per run inside a `_test_` space | Test setup |
-| **Ephemeral member** | `judah.ops+_test_<test_name>_<unix>@gmail.com` (plus-addressing) | Fresh per run | Test setup, gated by `HARNESS_ALLOW_INVITES` |
+| **Ephemeral member** | `user+_test_<test_name>_<unix>@gmail.com` (plus-addressing) | Fresh per run | Test setup, gated by `HARNESS_ALLOW_INVITES` |
 
 **Persistent vs fresh, in plain English**:
 - *Persistent* fixtures (spaces, tags, baseline member) are created once by hand in the live Circle community, recorded in `tests/fixtures.md` with their Circle IDs, and never deleted by automation. If a persistent fixture goes missing, regressions fail loudly and I re-create it manually.
@@ -198,7 +198,7 @@ Naming rules for every resource type the v1 ops touch:
 
 **Where the test data physically lives**: in the live Circle community, alongside live (non-`_test_`) resources. The community is not a sandbox. The only thing distinguishing test fixtures from live data is their `_test_` prefix and the safety guard that enforces it. `tests/fixtures.md` (committed to git) lists every persistent fixture by name and Circle ID, and identifies the community by **human name only** ("the live Circle community where I run the harness"). The numeric community ID lives in `.env.test`, never in git.
 
-**Why plus-addressing on `judah.ops@gmail.com`**: every `judah.ops+_test_<anything>@gmail.com` address routes to my real inbox, but Circle treats each one as a distinct member. I see any invite emails that leak through (defense against the never-auto-send rule failing). No external domain to maintain. No risk of mailing a real person.
+**Why plus-addressing on `user@gmail.com`**: every `user+_test_<anything>@gmail.com` address routes to my real inbox, but Circle treats each one as a distinct member. I see any invite emails that leak through (defense against the never-auto-send rule failing). No external domain to maintain. No risk of mailing a real person.
 
 **Orphan cleanup** (when a fresh resource isn't deleted because the test crashed):
 - The teardown step in every regression deletes its fresh resources via the appropriate `deleteX` method on the guarded client.
@@ -206,7 +206,7 @@ Naming rules for every resource type the v1 ops touch:
 - A `npm run test:cleanup` command exists in Phase 0.5 as a **stub**: it exits 0 and prints a one-line message pointing at the orphans log. See section 8 for the full teardown story.
 - Until cleanup is automated, I open `notes/test-orphans.log`, open the Circle UI, delete manually, and clear the log. Two-minute ritual.
 
-> **Confirmed (Decision 2 — `_test_` contract)**: persistent for scaffolding (spaces, tags, baseline member), fresh for anything a test mutates (posts, ephemeral members). Member emails use `judah.ops+_test_*@gmail.com` plus-addressing. Orphans log at `notes/test-orphans.log` (under gitignored `notes/`). Manual cleanup is a deliberate design choice given the maintenance budget and the blast radius — not a gap.
+> **Confirmed (Decision 2 — `_test_` contract)**: persistent for scaffolding (spaces, tags, baseline member), fresh for anything a test mutates (posts, ephemeral members). Member emails use `user+_test_*@gmail.com` plus-addressing. Orphans log at `notes/test-orphans.log` (under gitignored `notes/`). Manual cleanup is a deliberate design choice given the maintenance budget and the blast radius — not a gap.
 
 ---
 
@@ -339,7 +339,7 @@ The two helper functions `plainPass` and `plainFail` print one line per test:
 
 ```
 PASS  list_spaces_smoke              Found _test_general in the list of spaces (id 12345)
-FAIL  add_tag_to_member              Expected tag _test_smoke_tag on member judah.ops+_test_baseline@gmail.com after add, but member's tags were: [_test_other]
+FAIL  add_tag_to_member              Expected tag _test_smoke_tag on member user+_test_baseline@gmail.com after add, but member's tags were: [_test_other]
 PASS  guard_self_test                createPost rejected non-_test_ title before any API call
 ---
 2 passed, 1 failed
